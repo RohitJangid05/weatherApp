@@ -91,7 +91,11 @@
     align-items: center;
     margin-bottom: 30px;
 }
-
+.section-mid .left img{
+    width: 150px;
+    height: 140px;
+    object-fit: cover;
+}
 .section-mid .right {
     display: flex;
     gap: 25px;
@@ -111,8 +115,13 @@
     font-weight: 600;
     text-wrap: nowrap;
 }
+
 @media (max-width: 480px) {
     .container{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
         box-shadow: none;
         border-radius:0;
         width: 100vw;

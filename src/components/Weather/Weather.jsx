@@ -10,13 +10,13 @@ import { faLocationDot, faCloud, faTemperatureThreeQuarters, faMagnifyingGlass }
 const Weather = () => {
     const [City, setCity] = useState("delhi");
     const [Data, setData] = useState({});
-    const [loading, setLoading] = useState(true); 
+    const [loading, setLoading] = useState(true);
     const [inputValue, setInputValue] = useState("");
 
     const ApiUrl = 'https://api.openweathermap.org/data/2.5/weather';
 
     async function getWeather() {
-        setLoading(true); 
+        setLoading(true);
         try {
             const response = await axios.get(ApiUrl, { params: { q: City, appid: API_KEY } });
             setData(response.data);
@@ -27,7 +27,7 @@ const Weather = () => {
                 console.error("Error fetching weather data:", error);
             }
         } finally {
-            setLoading(false); 
+            setLoading(false);
         }
     }
 
@@ -53,37 +53,47 @@ const Weather = () => {
         switch (Data.weather[0].main) {
             case "Haze":
                 imgSrc = assets.haze;
-                bgColor = "#7a5557cc";
                 weatherAudio = audio.hazeAudio;
+                bgColor = "#7a5557cc";
                 break;
             case "Clear":
                 imgSrc = assets.sunny;
-                bgColor = "#ffa600c7";
                 weatherAudio = audio.sunnyAudio;
+                bgColor = "#ffa600c7";
                 break;
             case "Clouds":
                 imgSrc = assets.cloudy;
-                bgColor = "grey";
                 weatherAudio = audio.cloudAudio;
+                bgColor = "#000000e8";
                 break;
             case "Rain":
                 imgSrc = assets.rainy;
-                bgColor = "#4f8ea7bd";
                 weatherAudio = audio.rainAudio;
+                bgColor = "#4f8ea7bd";
                 break;
             case "Snow":
                 imgSrc = assets.snowy;
-                bgColor = "antiquewhite";
                 weatherAudio = audio.snowyAudio;
+                bgColor = "antiquewhite";
                 break;
+            case "thunderstrome":
+                imgSrc = assets.thunder;
+                weatherAudio = audio.thunderAudio;
+                bgColor = "grey";
+            case "Mist":
+                imgSrc = assets.mist;
+                weatherAudio=audio.mistAudio
+                bgColor="#000000cc";
             default:
+                imgSrc=assets.defaultImg;
+                weatherAudio=audio.defaultAudio;
                 bgColor = "black";
         }
     }
 
     return (
         <div className="main">
-            {loading ? ( 
+            {loading ? (
                 <div className="loader">
                     <div className="loading"></div>
                 </div>
