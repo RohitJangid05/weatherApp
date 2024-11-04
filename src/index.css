@@ -5,6 +5,13 @@
   font-family: Arial, Helvetica, sans-serif;
   color: white;
 }
+body{
+  background-image: url('weatherBg.avif');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  backdrop-filter: blur(2px);
+}
 html,body{
   width: 100vw;
   height: 100vh;

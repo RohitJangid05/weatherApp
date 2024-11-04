@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { API_KEY } from "../../ApiKey.js";
+import { API_KEY } from '../../ApiKey.js';
 import axios from 'axios';
 import './Weather.css';
 import { assets } from '../../assets/assets.js';
@@ -54,22 +54,22 @@ const Weather = () => {
             case "Haze":
                 imgSrc = assets.haze;
                 weatherAudio = audio.hazeAudio;
-                bgColor = "#7a5557cc";
+                bgColor = "#7a5557";
                 break;
             case "Clear":
                 imgSrc = assets.sunny;
                 weatherAudio = audio.sunnyAudio;
-                bgColor = "#ffa600c7";
+                bgColor = "#fda90c";
                 break;
             case "Clouds":
                 imgSrc = assets.cloudy;
                 weatherAudio = audio.cloudAudio;
-                bgColor = "#000000e8";
+                bgColor = "#000000";
                 break;
             case "Rain":
                 imgSrc = assets.rainy;
                 weatherAudio = audio.rainAudio;
-                bgColor = "#4f8ea7bd";
+                bgColor = "#4f8ea7";
                 break;
             case "Snow":
                 imgSrc = assets.snowy;
@@ -83,7 +83,7 @@ const Weather = () => {
             case "Mist":
                 imgSrc = assets.mist;
                 weatherAudio=audio.mistAudio
-                bgColor="#000000cc";
+                bgColor="#424242";
             default:
                 imgSrc=assets.defaultImg;
                 weatherAudio=audio.defaultAudio;
