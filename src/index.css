@@ -1,21 +1,37 @@
-*{
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: Arial, Helvetica, sans-serif;
-  color: white;
+@import "tailwindcss";
+
+*::-webkit-scrollbar{
+    display: none;
 }
-body{
-  background-image: url('weatherBg.avif');
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
-  backdrop-filter: blur(2px);
+
+.primary-bg{
+    background-color: #1E1F23;
 }
-html,body{
-  width: 100vw;
-  height: 100vh;
+.secondary-bg{
+    background-color: #2E2F39;
 }
-body::-webkit-scrollbar{
-  display: none;
+.third-bg{
+    background-color: #8ba09f;
+    color:black;
+}
+
+#toggleBtn::after {
+  content: "°C";
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  border-radius: 50%;
+  background-color:#8ba09f;
+  color: black;
+  transition: left 0.3s ease;
+}
+
+input[type="checkbox"]:checked + #toggleBtn::after {
+  left: 50%;
+  content: "°F";
 }

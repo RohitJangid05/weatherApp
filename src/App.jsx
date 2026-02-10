@@ -1,11 +1,10 @@
-import React from 'react'
-import Weather from './components/Weather/Weather.jsx'
+import Home from "./Pages/Home"
 
 const App = () => {
   return (
-    <div>
-     <Weather/>
-    </div>
+    <>
+     <Home/> 
+    </>
   )
 }
 
