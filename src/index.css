@@ -13,6 +13,7 @@
 .third-bg{
     background-color: #8ba09f;
     color:black;
+    /* color: #2e3736; */
 }
 
 #toggleBtn::after {
@@ -34,4 +35,25 @@
 input[type="checkbox"]:checked + #toggleBtn::after {
   left: 50%;
   content: "°F";
+}
+
+#dayForecast::after {
+  content: "4 days";
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  border-radius: 25px;
+  background-color:#8ba09f;
+  color: black;
+  transition: left 0.3s ease;
+}
+
+#dayForecastInput:checked + #dayForecast::after {
+  left: 50%;
+  content: "9 days";
 }

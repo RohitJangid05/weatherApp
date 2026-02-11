@@ -1,11 +1,13 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IoIosSearch } from "react-icons/io";
 import { BsFillSunriseFill, BsFillSunsetFill } from "react-icons/bs";
 import { FaTemperatureArrowUp, FaTemperatureArrowDown } from "react-icons/fa6";
 import { FaCloudRain, FaRegSnowflake } from "react-icons/fa";
 import { GiWhirlwind, GiWindsock } from "react-icons/gi";
-
+import { CircleLoader } from 'react-spinners'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Home = () => {
     const [loading, setLoading] = useState(false);
@@ -13,8 +15,11 @@ const Home = () => {
     const [input, setInput] = useState("Mumbai");
     const [city, setCity] = useState("Mumbai");
     const [weatherData, setWeatherData] = useState(null);
-    const [error, setError] = useState(null);
     const [toggle, setToggle] = useState(true)
+    const [dayForecast, setDayForecast] = useState(true)
+
+    const inputRef = useRef(null)
+    const hourlyRef = useRef(null);
 
     const formatTo12Hour = (timeString) => {
         const date = new Date(timeString);
@@ -36,29 +41,49 @@ const Home = () => {
     const getWeatherData = async () => {
         try {
             setLoading(true);
-            setError(null);
             const response = await axios.get(
                 `${import.meta.env.VITE_API_URL}${import.meta.env.VITE_API_KEY}&q=${city}&days=10&aqi=no&alerts=no`
             );
             setWeatherData(response.data);
         } catch {
-            setError("City not found");
             setWeatherData(null);
+            toast.error("City not found");
+            setCity("Mumbai")
         } finally {
             setLoading(false);
         }
     };
 
+    const handleSearch = () => {
+        if (inputRef.current.value.length <= 0) {
+            return toast.error("Please search for city")
+        }
+        if (!input.trim()) return;
+        setCity(input.trim());
+        inputRef.current.value = ""
+    };
+
     useEffect(() => {
-        const timer = setTimeout(() => {
-            if (input.trim()) setCity(input);
-        }, 600);
-        return () => clearTimeout(timer);
-    }, [input]);
+        if (!weatherData) return;
+
+        const currentHour = new Date().getHours();
+
+        const index = weatherData.forecast.forecastday[0].hour.findIndex((h) => {
+            return new Date(h.time).getHours() === currentHour;
+        });
+
+        if (index !== -1 && hourlyRef.current) {
+            const element = document.getElementById(`hour-${index}`);
+            element?.scrollIntoView({
+                behavior: "smooth",
+                inline: "center",
+                block: "nearest"
+            });
+        }
+    }, [weatherData]);
 
     useEffect(() => {
         getWeatherData();
-        console.log(weatherData)
     }, [city]);
 
     return (
@@ -70,22 +95,31 @@ const Home = () => {
                 </h1>
 
                 <div className="flex items-center gap-5">
-                    <div className="flex border px-3 py-2 rounded-full w-full sm:w-72 items-center">
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            handleSearch();
+                        }}
+                        className="flex border px-3 py-2 rounded-full w-full sm:w-72 items-center"
+                    >
                         <input
+                            ref={inputRef}
                             className="w-full outline-none bg-transparent"
                             type="text"
                             placeholder="Search city"
                             onChange={(e) => setInput(e.target.value)}
                         />
-                        <IoIosSearch className="text-2xl" />
-                    </div>
+                        <button type="submit">
+                            <IoIosSearch className="text-2xl cursor-pointer" />
+                        </button>
+                    </form>
+
                     <form>
                         <input onChange={() => setToggle(!toggle)} className="hidden" type="checkbox" name="toggle" id="toggle" />
                         <label
                             id="toggleBtn"
                             htmlFor="toggle"
-                            className="relative flex items-center justify-evenly border-2 w-16 h-8 secondary-bg rounded-full cursor-pointer"
-                        >
+                            className="relative flex items-center justify-evenly border-2 w-16 h-8 secondary-bg rounded-full cursor-pointer">
                             <p>°C</p>
                             <p>°F</p>
                         </label>
@@ -96,6 +130,7 @@ const Home = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                 {/* LEFT TOP CARD */}
                 <div className="col-span-1 lg:col-span-2 secondary-bg py-5 px-4 sm:px-6 lg:px-8 rounded-4xl">
+                    {loading && <div className="w-full h-full flex justify-center items-center"><CircleLoader color="#ffffff" /></div>}
                     {weatherData && !loading && (
                         <>
                             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
@@ -134,48 +169,85 @@ const Home = () => {
                             </div>
 
                             {/* HOURLY */}
-                            <div className="flex gap-3 overflow-x-auto py-5">
-                                {weatherData.forecast.forecastday[0].hour.map((h, i) => (
-                                    <div
-                                        key={i}
-                                        className="flex flex-col items-center gap-2 third-bg px-3 py-4 rounded-2xl min-w-21.25 lg:min-w-22.5"
-                                    >
-                                        <h1 className="text-xs">
-                                            {formatTo12Hour(h.time)}
-                                        </h1>
-                                        <img src={h.condition.icon} alt="" />
-                                        <h1 className="font-semibold">
-                                            {toggle ? `${Math.round(h.temp_c)}°c` : `${Math.round(h.temp_f)}°f`}
-                                        </h1>
-                                    </div>
-                                ))}
+                            <div
+                                ref={hourlyRef}
+                                className="flex gap-3 overflow-x-auto py-5 scroll-smooth"
+                            >
+                                {weatherData.forecast.forecastday[0].hour.map((h, i) => {
+                                    const currentHour = new Date().getHours();
+                                    const hourValue = new Date(h.time).getHours();
+                                    const isCurrent = currentHour === hourValue;
+
+                                    return (
+                                        <div
+                                            key={i}
+                                            id={`hour-${i}`}
+                                            className={`flex flex-col items-center gap-2 px-3 py-4 rounded-2xl min-w-24 transition-all duration-300
+                    ${isCurrent ? "bg-zinc-900 scale-105 shadow-lg" : "third-bg"}
+                `}
+                                        >
+                                            <h1 className="text-xs font-semibold">
+                                                {formatTo12Hour(h.time)}
+                                            </h1>
+
+                                            <img src={h.condition.icon} alt="Weather image" />
+
+                                            <h1 className="font-semibold">
+                                                {toggle
+                                                    ? `${Math.round(h.temp_c)}°c`
+                                                    : `${Math.round(h.temp_f)}°f`}
+                                            </h1>
+                                        </div>
+                                    );
+                                })}
                             </div>
+
                         </>
                     )}
                 </div>
 
-                {/* RIGHT FORECAST (lg unchanged) */}
+                {/* RIGHT FORECAST */}
                 <div className="row-span-1 lg:row-span-2 flex flex-col gap-5 secondary-bg py-4 px-4 sm:px-6 rounded-4xl">
-                    <h1 className="text-2xl lg:text-4xl">Forecasts</h1>
+                    <div className="flex items-center justify-between">
+                        <h1 className="text-2xl lg:text-4xl">Forecasts</h1>
+                        <form>
+                            <input onChange={() => setDayForecast(!dayForecast)} className="hidden" type="checkbox" name="toggle" id="dayForecastInput" />
+                            <label
+                                id="dayForecast"
+                                htmlFor="dayForecastInput"
+                                className="relative flex items-center justify-evenly border-2 w-30 h-10 secondary-bg rounded-full cursor-pointer">
+                                <p>4 days</p>
+                                <p>9 days</p>
+                            </label>
+                        </form>
+                    </div>
                     <div className="flex flex-col max-h-[60vh] lg:h-[77vh] overflow-y-auto gap-5">
-                        {weatherData &&
-                            weatherData.forecast.forecastday.map((d, i) => (
-                                <div
-                                    key={i}
-                                    className="flex justify-between items-center text-xl lg:text-2xl third-bg p-4 lg:p-5 rounded-2xl"
-                                >
-                                    <div className="flex gap-5 items-center">
-                                        <img className="w-8" src={d.day.condition.icon} alt="" />
-                                        <h1>{toggle ? `${Math.round(d.day.maxtemp_c)}°c` : `${Math.round(d.day.maxtemp_f)}°f`}</h1>
-                                    </div>
-                                    <div className="flex w-20 items-baseline gap-1">
-                                        <p>{d.date.split("-")[2]}</p>
-                                        <p className="capitalize text-[12px]">
-                                            {formatDate(d.date.split("-").reverse().join("-"))}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
+                        {weatherData && (
+                            weatherData.forecast.forecastday
+                                .filter(d => d.date !== new Date().toLocaleDateString("en-CA"))
+                                .map((d, i) => {
+                                    let numberOfDay = dayForecast == true ? 4 : 9
+                                    if (i < numberOfDay) {
+                                        const [year, month, day] = d.date.split("-");
+                                        return (
+                                            <div key={i}
+                                                className="flex justify-between items-center text-xl lg:text-2xl third-bg p-4 lg:p-4 rounded-2xl">
+                                                <div className="flex gap-5 items-center">
+                                                    <img className="w-8" src={d.day.condition.icon} alt="weather img" />
+                                                    <h1>{toggle ? `${Math.round(d.day.maxtemp_c)}°c` : `${Math.round(d.day.maxtemp_f)}°f`}
+                                                    </h1>
+                                                </div>
+                                                <div className="flex w-20 items-baseline gap-1">
+                                                    <p>{day}</p>
+                                                    <p className="capitalize text-[12px]">
+                                                        {formatDate(`${day}-${month}-${year}`)}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+                                })
+                        )}
                     </div>
                 </div>
 
@@ -241,8 +313,14 @@ const Home = () => {
                     </div>
                 )}
             </div>
-
-            {error && <p className="text-red-500 mt-4">{error}</p>}
+            <ToastContainer
+                position="top-left"
+                autoClose={5000}
+                hideProgressBar={false}
+                closeOnClick
+                pauseOnHover
+                theme="light"
+            />
         </div>
     );
 };
